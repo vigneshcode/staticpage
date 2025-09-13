@@ -1,12 +1,229 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ADB Shell Cheat Sheet</title>
+  <style>
+    :root{--bg:#0f172a;--card:#0b1220;--accent:#7dd3fc;--muted:#94a3b8;--white:#e6eef8}
+    body{font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:linear-gradient(180deg,#071028 0%, #07102a 100%); color:var(--white); margin:0; padding:40px;}
+    .container{max-width:1100px;margin:0 auto;}
+    header{display:flex;align-items:center;gap:16px;margin-bottom:24px;}
+    header h1{font-size:28px;margin:0;}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); padding:22px;border-radius:12px;box-shadow:0 6px 18px rgba(2,6,23,0.6);}
+    pre{background:#021124;padding:14px;border-radius:8px;overflow:auto;color:var(--white);}
+    code{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;}
+    h2{color:var(--accent);margin-top:20px;}
+    ul{line-height:1.6;}
+    .muted{color:var(--muted);}
+    .toc{margin-bottom:16px;padding:12px;background:rgba(255,255,255,0.02);border-radius:8px;}
+    a.anchor{color:var(--accent);text-decoration:none;}
+    footer{margin-top:20px;color:var(--muted);font-size:13px;text-align:center;}
+    @media (max-width:700px){body{padding:18px} header h1{font-size:20px}}
+  </style>
 </head>
 <body>
+  <div class="container">
+    <header>
+      <div class="card" style="padding:12px;display:inline-block">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 6h16M4 12h16M4 18h16" stroke="#7dd3fc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div>
+        <h1>ADB Shell Cheat Sheet</h1>
+        <div class="muted">Handy reference for `adb shell`, `pm`, `am`, file system, networking, logging and more</div>
+      </div>
+    </header>
 
-<h2>Coming Soon....</h2>
+    <div class="card">
+      <section id="important-notes">
+        <h2>📌 Important Notes</h2>
+        <ul>
+          <li><strong>Prefix with <code>adb shell</code>:</strong> To use these commands from your computer’s terminal/command prompt, prefix with <code>adb shell</code>.<br>
+            <pre><code>adb shell pm list packages</code></pre>
+          </li>
+          <li><strong>Root Access:</strong> Some commands require root. If you don’t have root, commands might fail or be limited. Try <code>adb root</code> on emulators or permissive builds.</li>
+          <li><strong>BusyBox:</strong> Availability of utilities can depend on BusyBox version and ROM.</li>
+          <li><strong>Help:</strong> Use <code>--help</code> or <code>-h</code> for many commands. Example: <code>adb shell pm --help</code></li>
+          <li><strong>Case Sensitivity:</strong> Android shell is case-sensitive.</li>
+        </ul>
+      </section>
 
+      <hr style="border:none;height:1px;background:rgba(255,255,255,0.03);margin:18px 0;">
 
+      <section id="package-manager">
+        <h2>📦 Package Manager (<code>pm</code>)</h2>
+        <ul>
+          <li><code>pm list packages</code> – List all installed packages</li>
+          <li><code>pm list packages -f</code> – List packages with their APK paths</li>
+          <li><code>pm list packages -d</code> – List disabled packages</li>
+          <li><code>pm list packages -e</code> – List enabled packages</li>
+          <li><code>pm list packages -s</code> – List system packages</li>
+          <li><code>pm list packages -3</code> – List user-installed (third-party) packages</li>
+          <li><code>pm list packages &lt;FILTER_STRING&gt;</code> – Filter packages by name</li>
+          <li><code>pm path &lt;PACKAGE_NAME&gt;</code> – Show APK path of a package</li>
+          <li><code>pm install &lt;PATH_TO_APK&gt;</code> – Install an APK</li>
+          <li><code>pm install -r &lt;PATH_TO_APK&gt;</code> – Reinstall app (keep data)</li>
+          <li><code>pm install -g &lt;PATH_TO_APK&gt;</code> – Install & grant all runtime permissions</li>
+          <li><code>pm uninstall &lt;PACKAGE_NAME&gt;</code> – Uninstall a package</li>
+          <li><code>pm uninstall -k &lt;PACKAGE_NAME&gt;</code> – Uninstall but keep data/cache</li>
+          <li><code>pm clear &lt;PACKAGE_NAME&gt;</code> – Clear all app data</li>
+          <li><code>pm enable &lt;PACKAGE_NAME&gt;</code> – Enable a package</li>
+          <li><code>pm disable &lt;PACKAGE_NAME&gt;</code> or <code>pm disable-user --user 0 &lt;PACKAGE_NAME&gt;</code> – Disable a package</li>
+          <li><code>pm grant &lt;PACKAGE_NAME&gt; &lt;PERMISSION&gt;</code> – Grant a runtime permission</li>
+          <li><code>pm revoke &lt;PACKAGE_NAME&gt; &lt;PERMISSION&gt;</code> – Revoke a permission</li>
+          <li><code>pm get-install-location</code> – Get default install location</li>
+          <li><code>pm set-install-location &lt;0|1|2&gt;</code> – Set default install location (0:auto,1:internal,2:external)</li>
+        </ul>
+      </section>
+
+      <section id="activity-manager">
+        <h2>🎬 Activity Manager (<code>am</code>)</h2>
+        <ul>
+          <li><code>am start -n &lt;PACKAGE&gt;/&lt;ACTIVITY&gt;</code> – Start an activity<br>
+            <pre><code>am start -n com.android.settings/.Settings</code></pre></li>
+          <li><code>am start -a &lt;ACTION&gt; -d &lt;DATA_URI&gt; -t &lt;MIME&gt;</code> – Start with intent<br>
+            <pre><code>am start -a android.intent.action.VIEW -d http://www.google.com</code></pre></li>
+          <li><code>am startservice &lt;PACKAGE&gt;/&lt;SERVICE&gt;</code> – Start a service</li>
+          <li><code>am stopservice &lt;PACKAGE&gt;/&lt;SERVICE&gt;</code> – Stop a service</li>
+          <li><code>am broadcast -a &lt;ACTION&gt;</code> – Send a broadcast intent</li>
+          <li><code>am force-stop &lt;PACKAGE&gt;</code> – Force stop app</li>
+          <li><code>am kill &lt;PACKAGE&gt;</code> – Kill all processes for a package</li>
+          <li><code>am kill-all</code> – Kill all background processes</li>
+          <li><code>am display-density &lt;DENSITY&gt;</code> – Change display density</li>
+          <li><code>am display-size &lt;WIDTHxHEIGHT&gt;</code> – Change display size</li>
+          <li><code>am screen-compat [on|off] &lt;PACKAGE&gt;</code> – Control screen compatibility</li>
+          <li><code>am stack list</code> – List activity stacks/tasks (newer Android)</li>
+          <li><code>am task &lt;TASK_ID&gt;</code> – Show task info</li>
+        </ul>
+      </section>
+
+      <section id="file-system">
+        <h2>📂 File System &amp; Navigation</h2>
+        <ul>
+          <li><code>ls</code>, <code>ls -a</code>, <code>ls -l</code> – List files</li>
+          <li><code>cd &lt;DIR&gt;</code> – Change directory</li>
+          <li><code>pwd</code> – Print working directory</li>
+          <li><code>mkdir &lt;DIR&gt;</code> – Create directory</li>
+          <li><code>rm &lt;FILE&gt;</code> – Delete file</li>
+          <li><code>rm -r &lt;DIR&gt;</code> – Delete directory recursively</li>
+          <li><code>rm -f &lt;FILE&gt;</code> – Force delete</li>
+          <li><code>cp &lt;SRC&gt; &lt;DEST&gt;</code> – Copy files</li>
+          <li><code>cp -r &lt;SRC&gt; &lt;DEST&gt;</code> – Copy directories</li>
+          <li><code>mv &lt;SRC&gt; &lt;DEST&gt;</code> – Move/rename files</li>
+          <li><code>cat &lt;FILE&gt;</code> – View file contents</li>
+          <li><code>head &lt;FILE&gt;</code> – View first lines</li>
+          <li><code>tail &lt;FILE&gt;</code> – View last lines</li>
+          <li><code>tail -f &lt;FILE&gt;</code> – Live follow file (logs)</li>
+          <li><code>touch &lt;FILE&gt;</code> – Create empty file or update timestamp</li>
+          <li><code>chmod &lt;PERMISSIONS&gt; &lt;FILE&gt;</code> – Change permissions</li>
+          <li><code>chown &lt;OWNER&gt;:&lt;GROUP&gt; &lt;FILE&gt;</code> – Change owner/group</li>
+          <li><code>df</code> – Show free space</li>
+          <li><code>du</code>, <code>du -h &lt;DIR&gt;</code> – Show disk usage</li>
+          <li><code>find &lt;PATH&gt; -name "&lt;PATTERN&gt;"</code> – Search files</li>
+          <li><code>grep "&lt;PATTERN&gt;" &lt;FILE&gt;</code> – Search inside files</li>
+        </ul>
+      </section>
+
+      <section id="device-info">
+        <h2>📊 Device Info &amp; Settings</h2>
+        <ul>
+          <li><code>getprop</code> – Show all system properties</li>
+          <li><code>getprop &lt;PROPERTY&gt;</code> – Show a specific property</li>
+          <li><code>setprop &lt;PROPERTY&gt; &lt;VALUE&gt;</code> – Set property (root required)</li>
+          <li><code>settings list system|global|secure</code> – List settings</li>
+          <li><code>settings get &lt;NAMESPACE&gt; &lt;SETTING&gt;</code> – Get setting</li>
+          <li><code>settings put &lt;NAMESPACE&gt; &lt;SETTING&gt; &lt;VALUE&gt;</code> – Set setting</li>
+          <li><code>dumpsys &lt;SERVICE&gt;</code> – Dump system info for a service</li>
+          <li><code>service list</code> – List running services</li>
+        </ul>
+      </section>
+
+      <section id="networking">
+        <h2>🌐 Networking</h2>
+        <ul>
+          <li><code>ip addr</code> or <code>ifconfig</code> – Show network interfaces</li>
+          <li><code>ip route</code> or <code>route -n</code> – Show routing table</li>
+          <li><code>ping &lt;HOST&gt;</code> – Ping a host</li>
+          <li><code>netstat</code>, <code>netstat -tulnp</code> – Network connections/ports</li>
+          <li><code>iptables -L</code> – List firewall rules (root)</li>
+          <li><code>svc wifi [enable|disable]</code> – Toggle Wi-Fi</li>
+          <li><code>svc data [enable|disable]</code> – Toggle mobile data</li>
+        </ul>
+      </section>
+
+      <section id="process-management">
+        <h2>⚙️ Process Management</h2>
+        <ul>
+          <li><code>ps</code>, <code>ps -A</code>, <code>ps -ef</code> – List processes</li>
+          <li><code>ps -T</code> – Show threads</li>
+          <li><code>top</code> – Live CPU/memory usage</li>
+          <li><code>kill &lt;PID&gt;</code> – Kill process</li>
+          <li><code>kill -9 &lt;PID&gt;</code> – Force kill</li>
+          <li><code>renice &lt;PRIORITY&gt; &lt;PID&gt;</code> – Change priority</li>
+        </ul>
+      </section>
+
+      <section id="logging">
+        <h2>📝 Logging (<code>logcat</code>)</h2>
+        <ul>
+          <li><code>logcat</code> – View logs</li>
+          <li><code>logcat -c</code> – Clear logs</li>
+          <li><code>logcat -d</code> – Dump and exit</li>
+          <li><code>logcat -v &lt;FORMAT&gt;</code> – Choose format</li>
+          <li><code>logcat &lt;TAG&gt;:&lt;PRIORITY&gt; *:S</code> – Filter logs (Priorities: V, D, I, W, E, F, S)</li>
+        </ul>
+      </section>
+
+      <section id="input-events">
+        <h2>🎯 Input &amp; Events</h2>
+        <ul>
+          <li><code>input text "&lt;TEXT&gt;"</code> – Simulate typing</li>
+          <li><code>input keyevent &lt;KEYCODE&gt;</code> – Simulate key press</li>
+          <li><code>input tap &lt;X&gt; &lt;Y&gt;</code> – Simulate tap</li>
+          <li><code>input swipe &lt;X1&gt; &lt;Y1&gt; &lt;X2&gt; &lt;Y2&gt; [DUR]</code> – Simulate swipe</li>
+          <li><code>getevent</code> – Monitor input events</li>
+          <li><code>sendevent</code> – Send low-level input events</li>
+        </ul>
+      </section>
+
+      <section id="screenshots">
+        <h2>📸 Screenshots &amp; Recording</h2>
+        <ul>
+          <li><code>screencap /sdcard/screenshot.png</code> – Take screenshot</li>
+          <li><code>screenrecord /sdcard/video.mp4</code> – Record screen</li>
+          <li><code>screenrecord --time-limit 10 &lt;FILE&gt;</code> – Limit duration</li>
+          <li><code>screenrecord --size &lt;WxH&gt;</code> – Set video size</li>
+          <li><code>screenrecord --bit-rate &lt;BPS&gt;</code> – Set bitrate</li>
+        </ul>
+      </section>
+
+      <section id="device-control">
+        <h2>🔧 Device Control</h2>
+        <ul>
+          <li><code>reboot</code>, <code>reboot bootloader</code>, <code>reboot recovery</code> – Reboot device</li>
+          <li><code>setenforce [0|1]</code> – Toggle SELinux mode (root)</li>
+          <li><code>getenforce</code> – Show SELinux mode</li>
+        </ul>
+      </section>
+
+      <section id="other-commands">
+        <h2>🛠 Other Useful Commands</h2>
+        <ul>
+          <li><code>date</code> – Show/set date/time</li>
+          <li><code>id</code>, <code>whoami</code> – Show user info</li>
+          <li><code>vmstat</code> – Virtual memory stats</li>
+          <li><code>which &lt;COMMAND&gt;</code> – Find command path</li>
+          <li><code>monkey -p &lt;PACKAGE&gt; -v &lt;EVENT_COUNT&gt;</code> – UI stress test</li>
+          <li><code>cmd &lt;SERVICE&gt; ...</code> – Interact with system services</li>
+        </ul>
+      </section>
+
+      <footer class="muted">
+        Generated with ❤️ — Your ADB Shell Cheat Sheet
+      </footer>
+    </div>
+  </div>
 </body>
 </html>
